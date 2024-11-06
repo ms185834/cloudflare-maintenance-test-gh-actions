@@ -55,6 +55,7 @@ jobs:
         # Read the contents of data.json into an environment variable
         json_data=$(cat web-data.json | base64 -w 0)
         echo "data=$json_data" >> $GITHUB_OUTPUT
+        echo $json_data
         
 
     - name: Update Cloudflare KV Store
@@ -72,6 +73,6 @@ jobs:
         CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       run: |
         curl --location 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/keys' \
-        --header '${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --header '${{ env.CF_AUTH_TOKEN }}' \
         --header 'Content-Type: application/json' \
   
