@@ -38,9 +38,6 @@ jobs:
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --data '${{ steps.read-json.outputs.data }}'
 
-      # Replace this with your real Cloudflare token in the repository secrets settings
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   
       
   update-web-cloudflare-data:
@@ -54,23 +51,22 @@ jobs:
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
-        json_data=$(cat web-data.json)
+        json_data=$(cat web-data.json | base64)
         echo "data=$json_data" >> $GITHUB_OUTPUT
         
 
     - name: Update Cloudflare KV Store
       run: |
+        FI_LIST=(${{ secrets.CLOUDFLARE_API_TOKEN }} | base64 --decode)
+        echo "$FI_LIST"
         curl -kv --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
         --header 'Content-Type: application/json' \
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-        --data '${{ steps.read-json.outputs.data }}'
+        --data '$FI_LIST'
     
     - name: Get the KV details
       run: |
         curl --location 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/keys' \
-        --header 'Authorization: Bearer k6_np1H_RD6WowkGV9OXDj9mBscaibKLrqfHsrv1 ' \
+        --header '${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --header 'Content-Type: application/json' \
-      # Replace this with your real Cloudflare token in the repository secrets settings
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   
