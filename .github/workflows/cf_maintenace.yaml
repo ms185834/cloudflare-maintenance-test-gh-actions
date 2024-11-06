@@ -18,6 +18,8 @@ on:
 
 jobs:
   update-mobile-cloudflare-data:
+    env:
+      CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     if: ${{inputs.Platform == 'mobile'}}
     runs-on: ubuntu-latest
     steps:
@@ -43,6 +45,8 @@ jobs:
   update-web-cloudflare-data:
     if: ${{inputs.Platform == 'web'}}
     runs-on: ubuntu-latest
+    env:
+      CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
