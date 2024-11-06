@@ -51,8 +51,8 @@ jobs:
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
-        json_data_web=$(cat web-data.json | base64)
-        echo "::set-output name=web-data::$json_data_web"
+        json_data=$(cat web-data.json | base64 -w 0)
+        echo "data=$json_data" >> $GITHUB_OUTPUT
         
 
     - name: Update Cloudflare KV Store
