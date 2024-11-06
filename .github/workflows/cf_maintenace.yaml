@@ -3,23 +3,33 @@ name: CloudFlare Maintenance
 # Trigger the workflow when data.json is modified
 on:
   workflow_dispatch:
+    inputs:
+      Platform:
+        description: 'Choose for which platform we are bringing up the maintenance page'
+        required: false
+        default: 'web'
+        type: choice
+        options:
+          - web
+          - mobile
   push:
     paths:
-      - 'data.json'
+      - 'mobile-data.json'
+      - 'web-data.json'
 
 jobs:
-  update-cloudflare-data:
+  update-mobile-cloudflare-data:
+    if: ${{inputs.Platform == 'mobile'}}
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Read data from data.json
+    - name: Read data from mobile-data.json
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
-        json_data=$(cat data.json)
+        json_data=$(cat mobile-data.json)
         echo "::set-output name=data::$json_data"
 
     - name: Update Cloudflare KV Store
@@ -32,3 +42,30 @@ jobs:
       # Replace this with your real Cloudflare token in the repository secrets settings
       env:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  
+      
+  update-web-cloudflare-data:
+    if: ${{inputs.Platform == 'web'}}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Read data from data.json
+      id: read-json
+      run: |
+        # Read the contents of data.json into an environment variable
+        json_data=$(cat web-data.json)
+        echo "::set-output name=data::$json_data"
+
+    - name: Update Cloudflare KV Store
+      run: |
+        curl --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ steps.read-json.outputs.data }}'
+
+      # Replace this with your real Cloudflare token in the repository secrets settings
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  
