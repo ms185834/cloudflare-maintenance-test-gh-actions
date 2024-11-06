@@ -1,0 +1,85 @@
+name: Enable maintenance for all FIs
+on:
+  workflow_dispatch:
+    inputs:
+      Platform:
+        description: 'Choose for which platform we are bringing up the maintenance page'
+        required: true
+        default: 'web'
+        type: choice
+        options:
+          - web
+          - mobile
+      Toggle:
+        description: 'Choose if you want to eanble or disable maintenance page for all FIs '
+        required: true
+        default: 'enable'
+        type: choice
+        options:
+          - enable
+          - disable
+jobs:
+    update-mobile-cloudflare-data:
+        if: ${{inputs.Platform == 'mobile'}}
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v3
+
+          - name: Read list of All FIs
+            id: read-json
+            run: |
+              # Read the contents of All_FIs.json into an environment variable
+              json_data=$(cat All_FIs.json)
+              echo "::set-output name=mobile-data::$json_data"
+
+            if: ${{ inputs.Toggle == 'enable' }}
+          - name: Enable maintenance page
+            run: |
+              run: |
+                curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+                --header 'Content-Type: application/json' \
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+                --data '${{ steps.read-json.outputs.mobile-data }}'
+            
+            if: ${{ inputs.Toggle == 'disable' }}
+          - name: Disable maintenance page
+            run: |
+              run: |
+                curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
+                --header 'Content-Type: application/json' \
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
+                # --data '${{ steps.read-json.outputs.mobile-data }}'
+    
+    update-web-cloudflare-data:
+        if: ${{inputs.Platform == 'mobile'}}
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v3
+
+          - name: Read list of All FIs
+            id: read-json
+            run: |
+              # Read the contents of All_FIs.json into an environment variable
+              json_data=$(cat All_FIs.json)
+              echo "::set-output name=web-data::$json_data"
+
+            if: ${{ inputs.Toggle == 'enable' }}
+          - name: Enable maintenance page
+            run: |
+              run: |
+                curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
+                --header 'Content-Type: application/json' \
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+                --data '${{ steps.read-json.outputs.web-data }}'
+            
+            if: ${{ inputs.Toggle == 'disable' }}
+          - name: Disable maintenance page
+            run: |
+              run: |
+                curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
+                --header 'Content-Type: application/json' \
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
+            
+             
