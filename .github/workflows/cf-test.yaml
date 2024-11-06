@@ -23,7 +23,7 @@ jobs:
         echo "::set-output name=data::$json_data"
     - name: Update Cloudflare KV Store
       run: |
-        curl --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+        curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
         --header 'Content-Type: application/json' \
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --data '${{ steps.read-json.outputs.data }}'
