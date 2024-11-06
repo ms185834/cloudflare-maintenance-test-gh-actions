@@ -12,13 +12,13 @@ on:
           - web
           - mobile
       API:
-        description: 'Choose for which platform we are bringing up the maintenance page'
+        description: 'Choose whether to add or remove FIs from the maintenance'
         required: true
         default: 'add'
         type: choice
         options:
           - add
-          - delete
+          - remove
 
 jobs:
   update-mobile-cloudflare-data:
