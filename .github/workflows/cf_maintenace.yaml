@@ -11,10 +11,18 @@ on:
         options:
           - web
           - mobile
+      API:
+        description: 'Choose for which platform we are bringing up the maintenance page'
+        required: true
+        default: 'add'
+        type: choice
+        options:
+          - add
+          - delete
 
 jobs:
   update-mobile-cloudflare-data:
-    if: ${{inputs.Platform == 'mobile'}}
+    if: ${{inputs.Platform == 'mobile'&& inputs.API == 'add'}}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -39,7 +47,7 @@ jobs:
   
       
   update-web-cloudflare-data:
-    if: ${{inputs.Platform == 'web'}}
+    if: ${{inputs.Platform == 'web' && inputs.API == 'add'}}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
