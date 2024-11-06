@@ -50,12 +50,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Read data from data.json
+    - name: Read data from web-data.json
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
         json_data=$(cat web-data.json)
-        echo "::set-output name=data::$json_data"
+        echo "data=$json_data" >> $GITHUB_OUTPUT
+        
 
     - name: Update Cloudflare KV Store
       run: |
