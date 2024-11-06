@@ -29,14 +29,14 @@ jobs:
       run: |
         # Read the contents of data.json into an environment variable
         json_data=$(cat mobile-data.json)
-        echo "::set-output name=data::$json_data"
+        echo "::set-output name=mobile-data::$json_data"
 
     - name: Update Cloudflare KV Store
       run: |
         curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
         --header 'Content-Type: application/json' \
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-        --data '${{ steps.read-json.outputs.data }}'
+        --data '${{ steps.read-json.outputs.mobile-data }}'
 
   
       
@@ -51,8 +51,8 @@ jobs:
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
-        json_data=$(cat web-data.json | base64)
-        echo "data=$json_data" >> $GITHUB_OUTPUT
+        json_data_web=$(cat web-data.json | base64)
+        echo "::set-output name=web-data::$json_data_web"
         
 
     - name: Update Cloudflare KV Store
