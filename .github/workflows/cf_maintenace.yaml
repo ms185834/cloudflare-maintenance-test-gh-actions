@@ -102,7 +102,7 @@ jobs:
       id: read-json
       run: |
         # Read the contents of data.json into an environment variable
-        jq -c . ./.github/workflows/all_fi.json > single-line-web-data.json
+        jq -c . web-data.json > single-line-web-data.json
         json_data=$(cat single-line-web-data.json)
         echo "data-remove=$json_data" >> $GITHUB_OUTPUT
         echo $json_data
