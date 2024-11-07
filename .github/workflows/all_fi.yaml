@@ -55,6 +55,9 @@ jobs:
         steps:
           - name: Checkout repository
             uses: actions/checkout@v3
+          -  name: Echo input vars
+             run: | 
+               echo "${{inputs.Toggle}}"
 
           - name: Read list of All FIs
             id: read-json
