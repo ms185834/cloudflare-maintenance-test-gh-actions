@@ -31,18 +31,20 @@ jobs:
             run: |
               # Read the contents of All_FIs.json into an environment variable
               json_data=$(cat ./.github/workflows/all_fi.json)
-              echo "mobile-data=$json_data >> $GITHUB_OUTPUT"
+              echo "mobile-data=$json_data" >> $GITHUB_OUTPUT
 
-            if: ${{ inputs.Toggle == 'enable' }}
+            
           - name: Enable maintenance page
+            if: ${{ inputs.Toggle == 'enable' }}
             run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
                 --data '${{ steps.read-json.outputs.mobile-data }}'
             
-            if: ${{ inputs.Toggle == 'disable' }}
+            
           - name: Disable maintenance page
+            if: ${{ inputs.Toggle == 'disable' }}
             run: |
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
                 --header 'Content-Type: application/json' \
@@ -58,24 +60,22 @@ jobs:
           -  name: Echo input vars
              run: | 
                echo "${{inputs.Toggle}}"
-
           - name: Read list of All FIs
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
               json_data=$(cat ./.github/workflows/all_fi.json)
-              echo "web-data=$json_data >> $GITHUB_OUTPUT"
-
-            if: ${{ inputs.Toggle == 'enable' }}
+              echo "web-data=$json_data" >> $GITHUB_OUTPUT
           - name: Enable maintenance page
+            if: ${{ inputs.Toggle == 'enable' }}
             run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
                 --data '${{ steps.read-json.outputs.web-data }}'
             
-            if: ${{ inputs.Toggle == 'disable' }}
           - name: Disable maintenance page
+            if: ${{ inputs.Toggle == 'disable' }}
             run: |
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
                 --header 'Content-Type: application/json' \
