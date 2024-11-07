@@ -55,7 +55,7 @@ jobs:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FORMATTED_DATA: ${{ env.formatted_data }}
         run: |
-          curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+          curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$FORMATTED_DATA"
@@ -87,7 +87,7 @@ jobs:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           DELETE_DATA: ${{ env.delete_data }}
         run: |
-          curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
+          curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$DELETE_DATA"
