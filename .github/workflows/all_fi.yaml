@@ -30,7 +30,8 @@ jobs:
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
-              json_data=$(cat ./.github/workflows/all_fi.json)
+              jq -c . ./.github/workflows/all_fi.json > single-line-mobile-data.json
+              json_data=$(cat single-line-mobile-data.json)
               echo "mobile-data=$json_data" >> $GITHUB_OUTPUT
 
             
@@ -64,6 +65,7 @@ jobs:
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
+              
               json_data=$(cat ./.github/workflows/all_fi.json)
               echo "web-data=$json_data" >> $GITHUB_OUTPUT
           - name: Enable maintenance page
