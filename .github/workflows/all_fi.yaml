@@ -62,7 +62,7 @@ jobs:
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
-              json_data=$(cat ./github/workflows/all_fi.json)
+              json_data=$(cat ./.github/workflows/all_fi.json)
               echo "web-data=$json_data >> $GITHUB_OUTPUT"
 
             if: ${{ inputs.Toggle == 'enable' }}
