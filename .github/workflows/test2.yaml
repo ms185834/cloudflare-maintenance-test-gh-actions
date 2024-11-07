@@ -1,4 +1,4 @@
-name: Cloudflare Maintenance
+name: Cloudflare Maintenance Test2
 
 on:
   workflow_dispatch:
