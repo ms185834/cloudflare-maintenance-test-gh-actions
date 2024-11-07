@@ -30,8 +30,8 @@ jobs:
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
-              json_data=$(cat All_FIs.json)
-              echo "::set-output name=mobile-data::$json_data"
+              json_data=$(cat all_fi.json)
+              echo "mobile-data=$json_data >> $GITHUB_OUTPUT"
 
             if: ${{ inputs.Toggle == 'enable' }}
           - name: Enable maintenance page
@@ -62,8 +62,8 @@ jobs:
             id: read-json
             run: |
               # Read the contents of All_FIs.json into an environment variable
-              json_data=$(cat All_FIs.json)
-              echo "::set-output name=web-data::$json_data"
+              json_data=$(cat ./github/workflows/all_fi.json)
+              echo "web-data=$json_data >> $GITHUB_OUTPUT"
 
             if: ${{ inputs.Toggle == 'enable' }}
           - name: Enable maintenance page
