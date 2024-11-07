@@ -33,6 +33,7 @@ jobs:
               jq -c . ./.github/workflows/all_fi.json > single-line-mobile-data.json
               json_data=$(cat single-line-mobile-data.json)
               echo "mobile-data=$json_data" >> $GITHUB_OUTPUT
+              echo $json_data
 
             
           - name: Enable maintenance page
@@ -68,6 +69,7 @@ jobs:
               jq -c . web-data.json > single-line-web-data.json
               json_data=$(cat single-line-web-data.json)
               echo "web-data=$json_data" >> $GITHUB_OUTPUT
+              echo $json_data
           - name: Enable maintenance page
             if: ${{ inputs.Toggle == 'enable' }}
             run: |
