@@ -1,4 +1,4 @@
-name: Cloudflare Maintenance Test
+name: Cloudflare Maintenance Dynamic
 
 on:
   workflow_dispatch:
