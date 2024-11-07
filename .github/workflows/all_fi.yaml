@@ -52,7 +52,7 @@ jobs:
                 # --data '${{ steps.read-json.outputs.mobile-data }}'
     
     update-web-cloudflare-data:
-        if: ${{inputs.Platform == 'mobile'}}
+        if: ${{inputs.Platform == 'web'}}
         runs-on: ubuntu-latest
         steps:
           - name: Checkout repository
