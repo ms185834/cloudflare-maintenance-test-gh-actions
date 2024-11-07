@@ -72,16 +72,19 @@ jobs:
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
-          # Convert comma-separated list of domains into JSON format for deletion
+          python3 <<EOF
           import json
-
+      
+          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
+      
+          # Write formatted JSON list for deletion
           with open('delete-data.json', 'w') as f:
               json.dump(domains, f)
-
-          # Output formatted JSON as a single line
+          EOF
+      
+          # Output formatted JSON as a single line for environment variable
           echo "delete_data=$(jq -c . delete-data.json)" >> $GITHUB_ENV
-
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
