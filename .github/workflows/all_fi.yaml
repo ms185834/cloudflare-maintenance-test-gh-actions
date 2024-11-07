@@ -36,7 +36,6 @@ jobs:
             if: ${{ inputs.Toggle == 'enable' }}
           - name: Enable maintenance page
             run: |
-              run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
@@ -45,7 +44,6 @@ jobs:
             if: ${{ inputs.Toggle == 'disable' }}
           - name: Disable maintenance page
             run: |
-              run: |
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
@@ -68,7 +66,6 @@ jobs:
             if: ${{ inputs.Toggle == 'enable' }}
           - name: Enable maintenance page
             run: |
-              run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
@@ -77,7 +74,6 @@ jobs:
             if: ${{ inputs.Toggle == 'disable' }}
           - name: Disable maintenance page
             run: |
-              run: |
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
