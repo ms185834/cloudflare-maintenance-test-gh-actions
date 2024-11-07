@@ -45,11 +45,15 @@ jobs:
           formatted_data = [{"key": domain, "value": "true"} for domain in domains]
       
           # Write formatted JSON to a file
-          with open('data.json', 'w') as f:
+          with open('data-mobile.json', 'w') as f:
               json.dump(formatted_data, f, indent=2)
           EOF
           # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data.json)" >> $GITHUB_ENV
+          echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_ENV
+      - name: Display formatted JSON for review
+        run: |
+          echo "Domains to be processed:"
+          cat data-mobile.json
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -79,12 +83,16 @@ jobs:
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
       
           # Write formatted JSON list for deletion
-          with open('delete-data.json', 'w') as f:
+          with open('delete-data-mobile.json', 'w') as f:
               json.dump(domains, f)
           EOF
       
           # Output formatted JSON as a single line for environment variable
-          echo "delete_data=$(jq -c . delete-data.json)" >> $GITHUB_ENV
+          echo "delete_data=$(jq -c . delete-data-mobile.json)" >> $GITHUB_ENV
+      - name: Display formatted JSON for review
+        run: |
+          echo "Domains to be processed:"
+          cat delete-data-mobile.json
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -115,11 +123,15 @@ jobs:
           formatted_data = [{"key": domain, "value": "true"} for domain in domains]
       
           # Write formatted JSON to a file
-          with open('data.json', 'w') as f:
+          with open('data-web.json', 'w') as f:
               json.dump(formatted_data, f, indent=2)
           EOF
           # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data.json)" >> $GITHUB_ENV
+          echo "formatted_data=$(jq -c . data-web.json)" >> $GITHUB_ENV
+      - name: Display formatted JSON for review
+        run: |
+          echo "Domains to be processed:"
+          cat data-web.json
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -149,12 +161,16 @@ jobs:
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
       
           # Write formatted JSON list for deletion
-          with open('delete-data.json', 'w') as f:
+          with open('delete-data-web.json', 'w') as f:
               json.dump(domains, f)
           EOF
       
           # Output formatted JSON as a single line for environment variable
-          echo "delete_data=$(jq -c . delete-data.json)" >> $GITHUB_ENV
+          echo "delete_data=$(jq -c . delete-data-web.json)" >> $GITHUB_ENV
+      - name: Display formatted JSON for review
+        run: |
+          echo "Domains to be processed:"
+          cat delete-data-web.json
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
