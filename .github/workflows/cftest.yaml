@@ -37,17 +37,19 @@ jobs:
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
+          python3 <<EOF
           import json
-
+      
+          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
           formatted_data = [{"key": domain, "value": "true"} for domain in domains]
-
+      
+          # Write formatted JSON to a file
           with open('data.json', 'w') as f:
               json.dump(formatted_data, f, indent=2)
-
-          # Output formatted JSON as a single line
+          EOF
+          # Output formatted JSON as a single line for environment variable
           echo "formatted_data=$(jq -c . data.json)" >> $GITHUB_ENV
-
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
