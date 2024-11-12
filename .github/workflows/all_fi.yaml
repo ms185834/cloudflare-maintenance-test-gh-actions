@@ -11,13 +11,15 @@ on:
           - web
           - mobile
       Toggle:
-        description: 'Choose if you want to eanble or disable maintenance page for all FIs '
+        description: 'Choose if you want to enable or disable maintenance page for all FIs '
         required: true
         default: 'enable'
         type: choice
         options:
           - enable
           - disable
+env:
+  FI_LIST= ${{ vars.All_FIs }}
 jobs:
     update-mobile-cloudflare-data:
         if: ${{inputs.Platform == 'mobile'}}
@@ -26,23 +28,34 @@ jobs:
           - name: Checkout repository
             uses: actions/checkout@v3
 
-          - name: Read list of All FIs
-            id: read-json
-            run: |
-              # Read the contents of All_FIs.json into an environment variable
-              jq -c . ./.github/workflows/all_fi.json > single-line-mobile-data.json
-              json_data=$(cat single-line-mobile-data.json)
-              echo "mobile-data=$json_data" >> $GITHUB_OUTPUT
-              echo $json_data
+          - name: Format input FI list
+            id: format-json
+            run: | 
+              python3 <<EOF
+              import json
+      
+              # Split and clean the comma-separated domain list
+              domains = [domain.strip() for domain in '${{FI_LIST}}'.split('\n') if domain.strip()]
+              formatted_data = [{"key": domain, "value": "true"} for domain in domains]
 
-            
+              # Write formatted JSON to a file
+              with open('data-mobile.json', 'w') as f:
+              json.dump(formatted_data, f, indent=2)
+              EOF
+              echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_OUTPUT
+
+          - name: Read list of All FIs
+            id: print-json
+            run: |
+                echo ${{steps.format-json.outputs.formatted_data}}
+              
           - name: Enable maintenance page
             if: ${{ inputs.Toggle == 'enable' }}
             run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-                --data '${{ steps.read-json.outputs.mobile-data }}'
+                --data '${{ steps.format-json.outputs.formatted_data }}'
             
             
           - name: Disable maintenance page
@@ -51,7 +64,7 @@ jobs:
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
-                # --data '${{ steps.read-json.outputs.mobile-data }}'
+                # --data '${{ steps.format-json.outputs.formatted_data }}'
     
     update-web-cloudflare-data:
         if: ${{inputs.Platform == 'web'}}
@@ -62,21 +75,39 @@ jobs:
           -  name: Echo input vars
              run: | 
                echo "${{inputs.Toggle}}"
+          
+          - name: Format input FI list
+            id: format-json
+            run: | 
+                 python3 <<EOF
+                 import json
+         
+                 # Split and clean the comma-separated domain list
+                 domains = [domain.strip() for domain in '${{FI_LIST}}'.split('\n') if domain.strip()]
+                 enable_formatted_data = [{"key": domain, "value": "true"} for domain in domains]
+   
+                 # Write formatted JSON to a file
+                 with open('enable-data.json', 'w') as f:
+                  json.dump(enable_formatted_data, f, indent=2)
+
+                 with open('disable-data.json', 'w') as f:
+                  json.dump(domains, f)
+                 EOF
+                 echo "formatted_data=$(jq -c . enable-data.json)" >> $GITHUB_OUTPUT
+                 echo "delete_file=$(jq -c . disable-data.json)" >> $GITHUB_OUTPUT
+      
           - name: Read list of All FIs
-            id: read-json
+            id: print-json
             run: |
-              # Read the contents of All_FIs.json into an environment variable
-              jq -c . ./.github/workflows/all_fi.json > single-line-web-data.json
-              json_data=$(cat single-line-web-data.json)
-              echo "web-data=$json_data" >> $GITHUB_OUTPUT
-              echo $json_data
+                echo ${{ steps.format-json.outputs.formatted_data }}
+                echo ${{ steps.format-json.outputs.delete_file }}
           - name: Enable maintenance page
             if: ${{ inputs.Toggle == 'enable' }}
             run: |
                 curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-                --data '${{ steps.read-json.outputs.web-data }}'
+                --data '${{ steps.format-json.outputs.formatted_data }}'
             
           - name: Disable maintenance page
             if: ${{ inputs.Toggle == 'disable' }}
@@ -84,5 +115,6 @@ jobs:
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
+                --data '${{ steps.format-json.outputs.delete_file }}'
             
              
