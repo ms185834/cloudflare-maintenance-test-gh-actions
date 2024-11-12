@@ -117,7 +117,7 @@ jobs:
             run: |
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
                 --header 'Content-Type: application/json' \
-                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
                 --data '${{ steps.format-json.outputs.delete_file }}'
             
              
