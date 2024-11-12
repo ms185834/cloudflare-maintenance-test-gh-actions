@@ -1,4 +1,4 @@
-name: Enable maintenance for all FIs
+name: Enable/Disable maintenance page for all FIs
 on:
   workflow_dispatch:
     inputs:
