@@ -31,19 +31,22 @@ jobs:
           - name: Format input FI list
             id: format-json
             run: | 
-              python3 <<EOF
-              import json
-      
-              # Split and clean the comma-separated domain list
-              domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split(',') if domain.strip()]
-              formatted_data = [{"key": domain, "value": "true"} for domain in domains]
+                 python3 <<EOF
+                 import json
+         
+                 # Split and clean the comma-separated domain list
+                 domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split(',') if domain.strip()]
+                 enable_formatted_data = [{"key": domain, "value": "true"} for domain in domains]
+   
+                 # Write formatted JSON to a file
+                 with open('enable-data.json', 'w') as f:
+                  json.dump(enable_formatted_data, f, indent=2)
 
-              # Write formatted JSON to a file
-              with open('data-mobile.json', 'w') as f:
-              json.dump(formatted_data, f, indent=2)
-              EOF
-              echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_OUTPUT
-
+                 with open('disable-data.json', 'w') as f:
+                  json.dump(domains, f)
+                 EOF
+                 echo "formatted_data=$(jq -c . enable-data.json)" >> $GITHUB_OUTPUT
+                 echo "delete_file=$(jq -c . disable-data.json)" >> $GITHUB_OUTPUT
           - name: Read list of All FIs
             id: print-json
             run: |
@@ -64,7 +67,7 @@ jobs:
                 curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
                 --header 'Content-Type: application/json' \
                 --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' 
-                # --data '${{ steps.format-json.outputs.formatted_data }}'
+                # --data '${{ steps.format-json.outputs.delete_file }}'
     
     update-web-cloudflare-data:
         if: ${{inputs.Platform == 'web'}}
