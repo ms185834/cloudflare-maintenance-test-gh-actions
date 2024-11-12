@@ -35,7 +35,7 @@ jobs:
               import json
       
               # Split and clean the comma-separated domain list
-              domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split('\n') if domain.strip()]
+              domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split(',') if domain.strip()]
               formatted_data = [{"key": domain, "value": "true"} for domain in domains]
 
               # Write formatted JSON to a file
@@ -83,7 +83,7 @@ jobs:
                  import json
          
                  # Split and clean the comma-separated domain list
-                 domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split(' ') if domain.strip()]
+                 domains = [domain.strip() for domain in '${{vars.All_FIs}}'.split(',') if domain.strip()]
                  enable_formatted_data = [{"key": domain, "value": "true"} for domain in domains]
    
                  # Write formatted JSON to a file
