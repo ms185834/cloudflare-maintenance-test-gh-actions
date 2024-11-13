@@ -29,6 +29,8 @@ jobs:
     environment: cf-nonprd
     if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
+    outputs:
+      data: steps.format-json.outputs.formatted_data
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -50,21 +52,26 @@ jobs:
               json.dump(formatted_data, f, indent=2)
           EOF
           # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_ENV
+          echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
           cat data-mobile.json
+  apply-maintenance-mobile-cloudflare:
+    environment: cf-nonprd
+    if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
+    runs-on: ubuntu-latest
+    needs: add-maintenance-mobile-cloudflare
+    steps:
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FORMATTED_DATA: ${{ env.formatted_data }}
+          FORMATTED_DATA: ${{ needs.add-maintenance-mobile-cloudflare.outputs.data }}
         run: |
           curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$FORMATTED_DATA"
-
   remove-maintenance-mobile-cloudflare:
     environment: cf-nonprd
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'mobile' }}
@@ -108,6 +115,8 @@ jobs:
   add-maintenance-web-cloudflare:
     if: ${{ inputs.API == 'add' && inputs.Platform == 'web' }}
     runs-on: ubuntu-latest
+    outputs:
+      web-data: ${{ steps.format-json.outputs.formatted_data }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -129,21 +138,28 @@ jobs:
               json.dump(formatted_data, f, indent=2)
           EOF
           # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data-web.json)" >> $GITHUB_ENV
+          echo "formatted_data=$(jq -c . data-web.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
           cat data-web.json
+
+  apply-maintenance-web-cloudflare:
+    environment: cf-nonprd
+    if: ${{ inputs.API == 'add' && inputs.Platform == 'web' }}
+    runs-on: ubuntu-latest
+    needs: add-maintenance-web-cloudflare
+    steps:
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FORMATTED_DATA: ${{ env.formatted_data }}
+          FORMATTED_DATA: ${{ needs.add-maintenance-web-cloudflare.outputs.web-data }}
         run: |
           curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$FORMATTED_DATA"
-
+    
   remove-maintenance-web-cloudflare:
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'web' }}
     runs-on: ubuntu-latest
