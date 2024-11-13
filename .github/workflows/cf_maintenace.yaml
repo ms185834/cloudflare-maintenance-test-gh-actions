@@ -1,6 +1,9 @@
 name: Cloudflare Maintenance
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       Platform:
@@ -61,7 +64,23 @@ jobs:
         json_data=$(cat single-line-web-data.json)
         echo "data=$json_data" >> $GITHUB_OUTPUT
         echo $json_data
-        
+      
+    - name: Display a few details
+      if: ${{ github.event_name }} == "pull_request"
+      run: |
+        echo "${{ steps.read-json.outputs.data }}"
+        echo "${{ github.event_name }}"
+
+    - name: Display Comment on a PR
+      uses: peter-evans/create-or-update-comment@v3
+      with: 
+        token: ${{ github.token }}
+        body: |
+          ${{ steps.read-json.outputs.data }}
+
+
+
+
 
     - name: Update Cloudflare KV Store
       run: |
@@ -118,4 +137,12 @@ jobs:
         --header 'Content-Type: application/json' \
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --data '${{ steps.read-json.outputs.data-remove }}'    
+
+  add-pr-web-maintenance-cloudflare:
+    if: ${{ github.event_name }} == "pull_request"
+    environment: cf-nonprd
+    runs-on: ubuntu-latest
+
+
+
   
