@@ -138,10 +138,6 @@ jobs:
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --data '${{ steps.read-json.outputs.data-remove }}'    
 
-  add-pr-web-maintenance-cloudflare:
-    if: ${{ github.event_name }} == "pull_request"
-    environment: cf-nonprd
-    runs-on: ubuntu-latest
 
 
 
