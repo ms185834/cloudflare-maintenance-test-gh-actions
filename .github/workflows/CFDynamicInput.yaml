@@ -25,34 +25,32 @@ on:
         default: ''
 
 jobs:
+
+############# MOBILE ############# 
+
+############# MOBILE MAINTENANCE ADDITION ############# 
   add-maintenance-mobile-cloudflare:
-    environment: cf-nonprd
     if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
     outputs:
-      data: steps.format-json.outputs.formatted_data
+      data_mobile: steps.format-json-mobile.outputs.formatted_data_mobile
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Format domains JSON
-        id: format-json
+        id: format-json-mobile
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
           python3 <<EOF
           import json
-      
-          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
           formatted_data = [{"key": domain, "value": "true"} for domain in domains]
-      
-          # Write formatted JSON to a file
           with open('data-mobile.json', 'w') as f:
               json.dump(formatted_data, f, indent=2)
           EOF
-          # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data-mobile.json)" >> $GITHUB_OUTPUT
+          echo "formatted_data_mobile=$(jq -c . data-mobile.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
@@ -66,79 +64,88 @@ jobs:
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FORMATTED_DATA: ${{ needs.add-maintenance-mobile-cloudflare.outputs.data }}
+          FORMATTED_DATA: ${{ needs.add-maintenance-mobile-cloudflare.outputs.data_mobile }}
         run: |
           curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$FORMATTED_DATA"
+
+          
+############# MOBILE MAINTENANCE REMOVAL ############# 
+    
   remove-maintenance-mobile-cloudflare:
-    environment: cf-nonprd
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
+    outputs:
+      mobile_data_delete: steps.format-delete-json-mobile.output.delete_data
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Format domains for deletion JSON
-        id: format-delete-json
+        id: format-delete-json-mobile
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
           python3 <<EOF
           import json
-      
-          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
-      
-          # Write formatted JSON list for deletion
           with open('delete-data-mobile.json', 'w') as f:
               json.dump(domains, f)
           EOF
-      
-          # Output formatted JSON as a single line for environment variable
-          echo "delete_data=$(jq -c . delete-data-mobile.json)" >> $GITHUB_ENV
+          echo "delete_data=$(jq -c . delete-data-mobile.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
           cat delete-data-mobile.json
+      
+  apply-maintenance-removal-mobile:
+    environment: cf-nonprd
+    if: ${{ inputs.API == 'remove' && inputs.Platform == 'mobile' }}
+    runs-on: ubuntu-latest
+    needs: remove-maintenance-mobile-cloudflare
+    steps:
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          DELETE_DATA: ${{ env.delete_data }}
+          DELETE_DATA: ${{ needs.remove-maintenance-mobile-cloudflare.outputs.mobile_data_delete }}
         run: |
           curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$DELETE_DATA"
 
+
+
+###############   WEB  #############
+
+############# WEB MAINTENANCE ADDITION ############# 
+
+
+    
   add-maintenance-web-cloudflare:
     if: ${{ inputs.API == 'add' && inputs.Platform == 'web' }}
     runs-on: ubuntu-latest
     outputs:
-      web-data: ${{ steps.format-json.outputs.formatted_data }}
+      web_data: ${{ steps.format-json-web.outputs.formatted_data_web }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Format domains JSON
-        id: format-json
+        id: format-json-web
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
           python3 <<EOF
           import json
-      
-          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
           formatted_data = [{"key": domain, "value": "true"} for domain in domains]
-      
-          # Write formatted JSON to a file
           with open('data-web.json', 'w') as f:
               json.dump(formatted_data, f, indent=2)
           EOF
-          # Output formatted JSON as a single line for environment variable
-          echo "formatted_data=$(jq -c . data-web.json)" >> $GITHUB_OUTPUT
+          echo "formatted_data_web=$(jq -c . data-web.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
@@ -153,49 +160,53 @@ jobs:
       - name: Update Cloudflare KV Store
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          FORMATTED_DATA: ${{ needs.add-maintenance-web-cloudflare.outputs.web-data }}
+          FORMATTED_DATA: ${{ needs.add-maintenance-web-cloudflare.outputs.web_data }}
         run: |
           curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$FORMATTED_DATA"
+
+############# WEB MAINTENANCE REMOVAL ############# 
     
   remove-maintenance-web-cloudflare:
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'web' }}
     runs-on: ubuntu-latest
+    outputs:
+      web_delete_data: steps.format-delete-json-web.outputs.delete_data_web
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Format domains for deletion JSON
-        id: format-delete-json
+        id: format-delete-json-web
         env:
           DOMAINS: ${{ inputs.Domains }}
         run: |
           python3 <<EOF
           import json
-      
-          # Split and clean the comma-separated domain list
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
-      
-          # Write formatted JSON list for deletion
           with open('delete-data-web.json', 'w') as f:
               json.dump(domains, f)
           EOF
-      
-          # Output formatted JSON as a single line for environment variable
-          echo "delete_data=$(jq -c . delete-data-web.json)" >> $GITHUB_ENV
+          echo "delete_data_web=$(jq -c . delete-data-web.json)" >> $GITHUB_OUPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
           cat delete-data-web.json
+      
+  apply-maintenance-removal-web:
+    environment: cf-nonprd
+    if: ${{ inputs.API == 'remove' && inputs.Platform == 'web' }}
+    runs-on: ubuntu-latest
+    needs: remove-maintenance-web-cloudflare
+    steps:
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          DELETE_DATA: ${{ env.delete_data }}
+          DELETE_DATA: ${{ needs.remove-maintenance-web-cloudflare.outputs.web_delete_data }}
         run: |
           curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$DELETE_DATA"
-
