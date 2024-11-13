@@ -99,7 +99,6 @@ jobs:
         run: |
           echo "Domains to be processed:"
           cat delete-data-mobile.json
-          echo "delete_data=$(cat delete-data-mobile.json)" >> $GITHUB_OUTPUT
       
   apply-maintenance-removal-mobile:
     environment: cf-nonprd
