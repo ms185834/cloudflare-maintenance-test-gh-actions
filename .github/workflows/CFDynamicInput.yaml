@@ -26,6 +26,7 @@ on:
 
 jobs:
   add-maintenance-mobile-cloudflare:
+    environment: cf-nonprd
     if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
     steps:
@@ -65,6 +66,7 @@ jobs:
           --data "$FORMATTED_DATA"
 
   remove-maintenance-mobile-cloudflare:
+    environment: cf-nonprd
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
     steps:
