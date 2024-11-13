@@ -99,6 +99,7 @@ jobs:
         run: |
           echo "Domains to be processed:"
           cat delete-data-mobile.json
+          echo "delete_data=$(cat delete-data-mobile.json)" >> $GITHUB_OUTPUT
       
   apply-maintenance-removal-mobile:
     environment: cf-nonprd
@@ -210,3 +211,54 @@ jobs:
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$DELETE_DATA"
+
+
+
+############# SAMPLE MAINTENANCE ADDITION ############# 
+
+
+    
+  sample-mobile-maintenance-web-cloudflare:
+    if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
+    runs-on: ubuntu-latest
+    outputs:
+      web_data_mobile: ${{ steps.format-json-mobile2.outputs.formatted_data_mobile2 }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Format domains JSON
+        id: format-json-mobile2
+        env:
+          DOMAINS: ${{ inputs.Domains }}
+        run: |
+          python3 <<EOF
+          import json
+          domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
+          formatted_data = [{"key": domain, "value": "true"} for domain in domains]
+          with open('data-web.json', 'w') as f:
+              json.dump(formatted_data, f, indent=2)
+          EOF
+          echo "formatted_data_mobile2=$(jq -c . data-web.json)" >> $GITHUB_OUTPUT
+      - name: Display formatted JSON for review
+        run: |
+          echo "Domains to be processed:"
+          cat data-web.json
+
+  apply-sample-maintenance-web-cloudflare:
+    environment: cf-nonprd
+    if: ${{ inputs.API == 'add' && inputs.Platform == 'web' }}
+    runs-on: ubuntu-latest
+    needs: sample-mobile-maintenance-web-cloudflare
+    steps:
+      - name: Update Cloudflare KV Store
+        env:
+          CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FORMATTED_DATA: ${{ needs.sample-mobile-maintenance-web-cloudflare.outputs.web_data_mobile }}
+        run: |
+          curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+          --data "$FORMATTED_DATA"
+
+
