@@ -247,7 +247,7 @@ jobs:
 
   apply-sample-maintenance-web-cloudflare:
     environment: cf-nonprd
-    if: ${{ inputs.API == 'add' && inputs.Platform == 'web' }}
+    if: ${{ inputs.API == 'add' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
     needs: sample-mobile-maintenance-web-cloudflare
     steps:
