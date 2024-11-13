@@ -22,6 +22,7 @@ on:
 
 jobs:
   add-mobile-maintenance-cloudflare:
+    environment: cf-nonprd
     if: ${{inputs.Platform == 'mobile'&& inputs.API == 'add'}}
     runs-on: ubuntu-latest
     steps:
@@ -45,6 +46,7 @@ jobs:
         --data '${{ steps.read-json.outputs.mobile-data }}'  
       
   add-web-maintenance-cloudflare:
+    environment: cf-nonprd
     if: ${{inputs.Platform == 'web' && inputs.API == 'add'}}
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +71,7 @@ jobs:
         --data '${{ steps.read-json.outputs.data }}'
   
   remove-mobile-maintenance-cloudflare:
+    environment: cf-nonprd
     if: ${{inputs.Platform == 'mobile'&& inputs.API == 'remove'}}
     runs-on: ubuntu-latest
     steps:
@@ -92,6 +95,7 @@ jobs:
         --data '${{ steps.read-json.outputs.mobile-data-remove }}'  
       
   remove-web-maintenance-cloudflare:
+    environment: cf-nonprd
     if: ${{inputs.Platform == 'web' && inputs.API == 'remove'}}
     runs-on: ubuntu-latest
     steps:
