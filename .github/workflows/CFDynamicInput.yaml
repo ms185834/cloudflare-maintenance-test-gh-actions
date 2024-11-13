@@ -66,11 +66,10 @@ jobs:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FORMATTED_DATA: ${{ needs.add-maintenance-mobile-cloudflare.outputs.data_mobile }}
         run: |
-          echo "$FORMATTED_DATA"
-          curl -vk --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
-          --header 'Content-Type: application/json' \
-          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-          --data "$FORMATTED_DATA"
+          curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+                --header 'Content-Type: application/json' \
+                --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+                --data "$FORMATTED_DATA"
 
           
 ############# MOBILE MAINTENANCE REMOVAL ############# 
