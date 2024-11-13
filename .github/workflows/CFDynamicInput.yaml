@@ -187,7 +187,7 @@ jobs:
           python3 <<EOF
           import json
           domains = [domain.strip() for domain in '${DOMAINS}'.split(',') if domain.strip()]
-          with open('delete-data-mobile.json', 'w') as f:
+          with open('delete-data-web.json', 'w') as f:
               json.dump(domains, f)
           EOF
           echo "delete_data_web=$(jq -c . delete-data-web.json)" >> $GITHUB_OUTPUT
