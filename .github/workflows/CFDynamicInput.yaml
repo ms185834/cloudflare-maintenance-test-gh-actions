@@ -78,7 +78,7 @@ jobs:
     if: ${{ inputs.API == 'remove' && inputs.Platform == 'mobile' }}
     runs-on: ubuntu-latest
     outputs:
-      mobile_data_delete: ${{ steps.format-delete-json-mobile.output.delete_data }}
+      mobile_delete_data: ${{ steps.format-delete-json-mobile.outputs.delete_data_mobile }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -94,7 +94,7 @@ jobs:
           with open('delete-data-mobile.json', 'w') as f:
               json.dump(domains, f)
           EOF
-          echo "delete_data=$(jq -c . delete-data-mobile.json)" >> $GITHUB_OUTPUT
+          echo "delete_data_mobile=$(jq -c . delete-data-mobile.json)" >> $GITHUB_OUTPUT
       - name: Display formatted JSON for review
         run: |
           echo "Domains to be processed:"
@@ -109,14 +109,12 @@ jobs:
       - name: Update Cloudflare KV Store (Delete)
         env:
           CF_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          DELETE_DATA: ${{ needs.remove-maintenance-mobile-cloudflare.outputs.mobile_data_delete }}
+          DELETE_DATA: ${{ needs.remove-maintenance-mobile-cloudflare.outputs.mobile_delete_data }}
         run: |
           curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk/delete' \
           --header 'Content-Type: application/json' \
           --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
           --data "$DELETE_DATA"
-
-
 
 ###############   WEB  #############
 
