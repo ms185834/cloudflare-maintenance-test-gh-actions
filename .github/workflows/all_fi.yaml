@@ -22,6 +22,7 @@ on:
 #   FI_LIST=${{ vars.All_FIs }}
 jobs:
     update-mobile-cloudflare-data:
+        environment: cf-nonprd
         if: ${{inputs.Platform == 'mobile'}}
         runs-on: ubuntu-latest
         steps:
@@ -70,6 +71,7 @@ jobs:
                 --data '${{ steps.format-json.outputs.delete_file }}'
     
     update-web-cloudflare-data:
+        environment: cf-nonprd
         if: ${{inputs.Platform == 'web'}}
         runs-on: ubuntu-latest
         steps:
