@@ -72,7 +72,7 @@ jobs:
         echo ${{ needs.read-data.outputs.web_enable_data }}
         echo ${{ needs.read-data.outputs.web_disable_data }}
 
-     - name: Manually enable maintenance Page
+     - name: Manually enable web maintenance Page
        if: ${{inputs.Platform == 'web' && inputs.API == 'enable'}}
        run: |
         curl --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
@@ -80,14 +80,42 @@ jobs:
         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
         --data '${{ needs.read-data.outputs.web_enable_data }}'
     
-     - name: Manually disable maintenance Page
+     - name: Manually disable web maintenance Page
        if: ${{inputs.Platform == 'web' && inputs.API == 'disable'}}
        run: |
          curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
          --header 'Content-Type: application/json' \
          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
          --data '${{ needs.read-data.outputs.web_disable_data }}'
+
+
+  Mobile-maintenance-page-cloudflare:
+    if: ${{ github.event_name == 'workflow_dispatch' }} 
+    runs-on: ubuntu-latest
+    needs: read-data
+    steps:
+     - name: Log List
+       run: |
+        echo ${{ needs.read-data.outputs.mobile_enable_data }}
+        echo ${{ needs.read-data.outputs.mobile_disable_data }}
+
+     - name: Manually enable mobile maintenance Page
+       if: ${{inputs.Platform == 'mobile' && inputs.API == 'enable'}}
+       run: |
+        curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ needs.read-data.outputs.mobile_enable_data }}'  
     
+     - name: Manually disable mobile maintenance Page
+       if: ${{inputs.Platform == 'mobile' && inputs.API == 'disable'}}
+       run: |
+         curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+         --header 'Content-Type: application/json' \
+         --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+         --data '${{ needs.read-data.outputs.mobile_disable_data }}'
+
+         
   PR-web-maintenance-page-cloudflare:
     if: ${{ github.event_name == 'pull_request' }} 
     permissions:
@@ -116,7 +144,72 @@ jobs:
           -H "Content-Type:application/json" \
           -X POST \
           --data-binary "$json_content" \
-          "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments"
+          "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments" 
+          
+     - name: Enable Web Maintenance page on push
+       if: github.ref == 'main' && github.event_name == 'push'
+       run: |
+        curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ needs.read-data.outputs.web_enable_data }}'
+
+     - name: Disable Web Maintenance page on push
+       if: github.ref == 'main' && github.event_name == 'push'
+       run: |
+        curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ needs.read-data.outputs.web_disable_data }}'
+
+  PR-mobile-maintenance-page-cloudflare:
+    if: ${{ github.event_name == 'pull_request' }} 
+    permissions:
+        pull-requests: write
+    runs-on: ubuntu-latest
+    needs: read-data
+    steps:
+     - name: Checkout repository
+       uses: actions/checkout@v4
+
+     - name: Log List
+       run: |
+        echo ${{ github.event_name }}
+        echo ${{ needs.read-data.outputs.mobile_enable_data }}
+        echo ${{ needs.read-data.outputs.mobile_disable_data }}
+
+     - name: Print Comment on PR
+       run: |
+          # Get PR number
+          pr_number=${{ github.event.pull_request.number }}
+
+          json_content="{\"body\": \"Enable Data: ${{ needs.read-data.outputs.mobile_enable_data }}\\nDisable Data: ${{ needs.read-data.outputs.mobile_disable_data }}\"}"
+          
+          # Using Github API
+          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Content-Type:application/json" \
+          -X POST \
+          --data-binary "$json_content" \
+          "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments" 
+          
+     - name: Enable Mobile Maintenance page on push
+       if: github.ref == 'main' && github.event_name == 'push'
+       run: |
+        curl -kv --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ needs.read-data.outputs.mobile_enable_data }}'
+
+     - name: Disable Mobile Maintenance page on push
+       if: github.ref == 'main' && github.event_name == 'push'
+       run: |
+        curl -kv --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/2593f0624a5f4142b8361279d9ead704/bulk' \
+        --header 'Content-Type: application/json' \
+        --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
+        --data '${{ needs.read-data.outputs.mobile_disable_data }}'
+        
+
+        
 
 
     
