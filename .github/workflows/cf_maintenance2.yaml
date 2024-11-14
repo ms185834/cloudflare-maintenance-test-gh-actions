@@ -90,6 +90,8 @@ jobs:
     
   PR-web-maintenance-page-cloudflare:
     if: ${{ github.event_name == 'pull_request' }} 
+    permissions:
+        pull-requests: write
     runs-on: ubuntu-latest
     needs: read-data
     steps:
