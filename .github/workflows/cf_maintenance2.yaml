@@ -1,4 +1,4 @@
-name: Cloudflare Maintenance
+name: Cloudflare Maintenance 2
 
 on:
   pull_request:
@@ -76,8 +76,7 @@ jobs:
          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
          --data '${{ needs.read-data.outputs.web_disable_data }}'
 
-     - name: Enable via PR
-       if: ${{ github.event_name }} == "pull_request"
+     - name: Log List
        run: |
         echo ${{ needs.read-data.outputs.web_enable_data }}
         echo ${{ needs.read-data.outputs.web_disable_data }}
@@ -97,6 +96,7 @@ jobs:
         # --data '${{ needs.read-data.outputs.web_disable_data }}'
 
      - name: Comment on the PR
+       if: ${{ github.event_name }} == "pull_request"
        uses: actions/github-script@v6
        with:
         script: |
