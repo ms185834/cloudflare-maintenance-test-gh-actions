@@ -88,31 +88,6 @@ jobs:
          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
          --data '${{ needs.read-data.outputs.web_disable_data }}'
     
-
-     - name: Disable via PR
-       if: ${{ github.event_name }} == "pull_request"
-       run: |
-        echo ${{ needs.read-data.outputs.web_disable_data }}
-        echo ${{ github.event_name }}
-        # curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
-        # --header 'Content-Type: application/json' \
-        # --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-        # --data '${{ needs.read-data.outputs.web_disable_data }}'
-
-     - name: Comment on the PR
-       if: ${{ github.event_name }} == "pull_request"
-       uses: actions/github-script@v6
-       with:
-        script: |
-            const prNumber = context.payload.pull_request.number;
-            const comment = "Disable List \n ${{ needs.read-data.outputs.web_disable_data }} \n Enable List:echo ${{ needs.read-data.outputs.web_enable_data }}";
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: comment
-            });
-
   PR-web-maintenance-page-cloudflare:
     if: ${{ github.event_name == 'pull_request' }} 
     runs-on: ubuntu-latest
