@@ -56,10 +56,17 @@ jobs:
         jq -c . mobile-data-remove.json > single-line-mobile-data-disable.json
         json_data=$(cat single-line-mobile-data-disable.json)
         echo "mobile_disable_data=$json_data" >> $GITHUB_OUTPUT
+
   Web-maintenance-page-cloudflare:
+    if: ${{ github.event_name }} == "workflow_dispatch"
     runs-on: ubuntu-latest
     needs: read-data
     steps:
+     - name: Log List
+       run: |
+        echo ${{ needs.read-data.outputs.web_enable_data }}
+        echo ${{ needs.read-data.outputs.web_disable_data }}
+
      - name: Manually enable maintenance Page
        if: ${{inputs.Platform == 'web' && inputs.API == 'enable'}}
        run: |
@@ -75,15 +82,6 @@ jobs:
          --header 'Content-Type: application/json' \
          --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
          --data '${{ needs.read-data.outputs.web_disable_data }}'
-
-     - name: Log List
-       run: |
-        echo ${{ needs.read-data.outputs.web_enable_data }}
-        echo ${{ needs.read-data.outputs.web_disable_data }}
-        # curl --location --request PUT 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk' \
-        # --header 'Content-Type: application/json' \
-        # --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
-        # --data '${{ needs.read-data.outputs.web_enable_data }}'
     
 
      - name: Disable via PR
@@ -109,6 +107,23 @@ jobs:
               issue_number: prNumber,
               body: comment
             });
+
+  Web-maintenance-page-cloudflare-PR:
+    if: ${{ github.event_name }} == "pull_request"
+    runs-on: ubuntu-latest
+    needs: read-data
+    steps:
+     - name: Log List
+       run: |
+        echo ${{ needs.read-data.outputs.web_enable_data }}
+        echo ${{ needs.read-data.outputs.web_disable_data }}
+
+     - name: Print Comment on PR
+       run: |
+        echo "Comment!"
+
+    
+
         
 
        
