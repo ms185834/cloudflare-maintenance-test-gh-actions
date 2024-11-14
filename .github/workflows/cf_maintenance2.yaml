@@ -39,7 +39,7 @@ jobs:
       run: |
         # Read mobile data
         jq -c . mobile-data.json > single-line-mobile-data.json
-        json_data=$(cat single-line-web-data.json)
+        json_data=$(cat single-line-mobile-data.json)
         echo "mobile_enable_data=$json_data" >> $GITHUB_OUTPUT
 
         #Read Web data
@@ -54,7 +54,7 @@ jobs:
 
         #Read Mobile data remove
         jq -c . mobile-data-remove.json > single-line-mobile-data-disable.json
-        json_data=$(cat single-line-web-data-disable.json)
+        json_data=$(cat single-line-mobile-data-disable.json)
         echo "mobile_disable_data=$json_data" >> $GITHUB_OUTPUT
   Web-maintenance-page-cloudflare:
     runs-on: ubuntu-latest
