@@ -90,6 +90,7 @@ jobs:
        if: ${{ github.event_name }} == "pull_request"
        run: |
         echo ${{ needs.read-data.outputs.web_disable_data }}
+        echo ${{ github.event_name }}
         # curl --location --request POST 'https://api.cloudflare.com/client/v4/accounts/6deff3dcb08cded6b6a16a253c16f672/storage/kv/namespaces/9845eb89c99a4edf94a01ad7a40fcf76/bulk/delete' \
         # --header 'Content-Type: application/json' \
         # --header 'Authorization: ${{ secrets.CLOUDFLARE_API_TOKEN }}' \
