@@ -4,6 +4,11 @@ on:
   pull_request:
     branches:
       - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
   workflow_dispatch:
     inputs:
       Platform:
@@ -58,7 +63,7 @@ jobs:
         echo "mobile_disable_data=$json_data" >> $GITHUB_OUTPUT
 
   Web-maintenance-page-cloudflare:
-    if: ${{ github.event_name }} == "workflow_dispatch"
+    if: ${{ github.event_name == 'workflow_dispatch' }} 
     runs-on: ubuntu-latest
     needs: read-data
     steps:
@@ -108,19 +113,30 @@ jobs:
               body: comment
             });
 
-  Web-maintenance-page-cloudflare-PR:
-    if: ${{ github.event_name }} == "pull_request"
+  PR-web-maintenance-page-cloudflare:
+    if: ${{ github.event_name == 'pull_request' }} 
     runs-on: ubuntu-latest
     needs: read-data
     steps:
      - name: Log List
        run: |
+        echo ${{ github.event_name }}
         echo ${{ needs.read-data.outputs.web_enable_data }}
         echo ${{ needs.read-data.outputs.web_disable_data }}
 
      - name: Print Comment on PR
-       run: |
-        echo "Comment!"
+       uses: actions/github-script@v6
+       with:
+        script: |
+            const prNumber = context.payload.pull_request.number;
+            json_content = ${{ needs.read-data.outputs.web_enable_data }}
+            const comment = process.env.json_content;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: JSON Content:\n\\\`json\n${jsonContent}\n\\\`
+            });
 
     
 
